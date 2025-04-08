@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Học Toán Lớp 2</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>Học Toán Vui Vẻ</h1>
+    </header>
+    
+    <div class="game-container">
+      <div class="start-screen" id="startScreen">
+        <h2>Sẵn sàng học toán nào!</h2>
+        <p>Bạn sẽ có 10 phép tính để giải quyết.</p>
+        <p>Mỗi phép tính có thời gian là 60 giây.</p>
+        
+        <div class="difficulty-selection">
+          <h3>Chọn mức độ:</h3>
+          <div class="difficulty-options">
+            <button id="level1Button" class="btn difficulty-btn">
+              <div class="difficulty-icon">1</div>
+              <div class="difficulty-label">1 chữ số (0-9)</div>
+            </button>
+            <button id="level2Button" class="btn difficulty-btn">
+              <div class="difficulty-icon">2</div>
+              <div class="difficulty-label">2 chữ số (0-99)</div>
+            </button>
+            <button id="level3Button" class="btn difficulty-btn">
+              <div class="difficulty-icon">3</div>
+              <div class="difficulty-label">3 chữ số (0-999)</div>
+            </button>
+          </div>
+        </div>
+      </div>
+      
+      <div class="game-screen hidden" id="gameScreen">
+        <div class="info-bar">
+          <div style="text-align: left">
+            <div class="problem-counter">Câu hỏi: <span id="currentProblem">1</span>/10</div>
+            <div class="score">Điểm: <span id="score">0</span></div>
+          </div>
+          <div class="timer-container">
+            <div class="timer-circle-container">
+              <svg class="timer-circle" viewBox="0 0 100 100">
+                <circle class="timer-circle-bg" cx="50" cy="50" r="45"></circle>
+                <circle class="timer-circle-progress" cx="50" cy="50" r="45"></circle>
+              </svg>
+              <div class="timer-text">
+                <span id="timeLeft">60</span>s
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="problem-container">
+          <div class="problem" id="problem" style="min-width: 150px">
+            <div class="number-row" id="firstNumber">123</div>
+            <div class="operation-row">
+              <span class="operation" id="operation">+</span>
+            </div>
+            <div class="number-row" id="secondNumber">456</div>
+            <div class="number-row" style="border-top: 3px solid #ff69b4;width: 100%;text-align: right;padding-top: 10px;">?</div>
+          </div>
+          
+          <!-- Thêm container cho con vật suy nghĩ -->
+          <div class="thinking-animal-container">
+            <div id="rabbitContainer" class="animal-container">
+              <img id="rabbitThinking" src="images/rabbit-thinking.png" alt="Thỏ đang suy nghĩ" class="rabbit-state hidden">
+              <img id="rabbitCorrect" src="images/rabbit-correct.png" alt="Thỏ vui mừng" class="rabbit-state hidden">
+              <img id="rabbitWrong" src="images/rabbit-wrong.png" alt="Thỏ buồn bã" class="rabbit-state hidden">
+            </div>
+          </div>
+        </div>
+
+        <div class="answer-row">
+          <div class="answer-options" id="answerOptions">
+            <!-- Các nút lựa chọn sẽ được tạo bằng JavaScript -->
+          </div>
+        </div>
+
+        <div class="controls">
+          <button id="submitButton" class="btn">Kiểm tra</button>
+          <button id="nextButton" class="btn hidden">Câu tiếp theo</button>
+          <button id="exitButton" class="btn exit-btn">Thoát</button>
+        </div>
+        
+        <div class="feedback" id="feedback"></div>
+      </div>
+      
+      <div class="result-screen hidden" id="resultScreen">
+        <h2>Kết quả</h2>
+        <div class="result-info">
+          <p>Số câu đúng: <span id="correctAnswers">0</span>/10</p>
+          <p>Điểm của bạn: <span id="finalScore">0</span></p>
+          <p>Mức độ: <span id="difficultyLevel">1 chữ số</span></p>
+        </div>
+        <div class="result-message" id="resultMessage"></div>
+        <button id="playAgainButton" class="btn">Chơi lại cùng mức</button>
+        <button id="homeButton" class="btn exit-btn">Về trang chủ</button>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Âm thanh -->
+  <audio id="tickSound" loop preload="auto">
+    <source src="sounds/tick.mp3" type="audio/mpeg">
+  </audio>
+  <audio id="correctSound" preload="auto">
+    <source src="sounds/correct.mp3" type="audio/mpeg">
+  </audio>
+  <audio id="wrongSound" preload="auto">
+    <source src="sounds/wrong.mp3" type="audio/mpeg">
+  </audio>
+
+  <script src="script.js"></script>
+</body>
+</html>
