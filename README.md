@@ -1,3 +1,3 @@
 # math4kids
 
-https://math4kids.vercel.app
+https://m4kids.vercel.app/
