@@ -3,10 +3,16 @@ document.addEventListener('DOMContentLoaded', () => {
   const startScreen = document.getElementById('startScreen');
   const gameScreen = document.getElementById('gameScreen');
   const resultScreen = document.getElementById('resultScreen');
+  const customRangeForm = document.getElementById('customRangeForm');
 
   const level1Button = document.getElementById('level1Button');
   const level2Button = document.getElementById('level2Button');
   const level3Button = document.getElementById('level3Button');
+  const levelCustomButton = document.getElementById('levelCustomButton');
+  const startCustomButton = document.getElementById('startCustomButton');
+  const backButton = document.getElementById('backButton');
+  const minValueInput = document.getElementById('minValue');
+  const maxValueInput = document.getElementById('maxValue');
 
   const submitButton = document.getElementById('submitButton');
   const nextButton = document.getElementById('nextButton');
@@ -49,10 +55,13 @@ document.addEventListener('DOMContentLoaded', () => {
   const totalTime = 60; // Total time in seconds
   let currentDifficulty = 1; // Default: 1 digit
   let selectedAnswer = null;
+  let customMinValue = 0;
+  let customMaxValue = 100;
   let difficultyLabels = {
     1: "1 chữ số (0-9)",
     2: "2 chữ số (0-99)",
-    3: "3 chữ số (0-999)"
+    3: "3 chữ số (0-999)",
+    4: `Tùy chỉnh (${customMinValue}-${customMaxValue})`
   };
 
   // Timer circle constants
@@ -62,6 +71,9 @@ document.addEventListener('DOMContentLoaded', () => {
   level1Button.addEventListener('click', () => startGame(1));
   level2Button.addEventListener('click', () => startGame(2));
   level3Button.addEventListener('click', () => startGame(3));
+  levelCustomButton.addEventListener('click', showCustomRangeForm);
+  startCustomButton.addEventListener('click', startCustomGame);
+  backButton.addEventListener('click', hideCustomRangeForm);
 
   submitButton.addEventListener('click', checkAnswer);
   nextButton.addEventListener('click', nextProblem);
@@ -70,6 +82,41 @@ document.addEventListener('DOMContentLoaded', () => {
   exitButton.addEventListener('click', confirmExit);
 
   // Functions
+  function showCustomRangeForm() {
+    startScreen.classList.add('hidden');
+    customRangeForm.classList.remove('hidden');
+  }
+
+  function hideCustomRangeForm() {
+    customRangeForm.classList.add('hidden');
+    startScreen.classList.remove('hidden');
+  }
+
+  function startCustomGame() {
+    customMinValue = parseInt(minValueInput.value) || 0;
+    customMaxValue = parseInt(maxValueInput.value) || 100;
+    
+    // Validate input
+    if (customMinValue >= customMaxValue) {
+      alert('Giá trị nhỏ nhất phải nhỏ hơn giá trị lớn nhất!');
+      return;
+    }
+    
+    if (customMaxValue > 9999) {
+      alert('Giá trị lớn nhất không được vượt quá 9999!');
+      return;
+    }
+    
+    // Ẩn form tùy chỉnh
+    customRangeForm.classList.add('hidden');
+    
+    // Update difficulty label
+    difficultyLabels[4] = `Tùy chỉnh (${customMinValue}-${customMaxValue})`;
+    
+    // Start game with custom difficulty (4)
+    startGame(4);
+  }
+
   function startGame(difficulty) {
     // Set difficulty level
     currentDifficulty = difficulty;
@@ -435,17 +482,27 @@ document.addEventListener('DOMContentLoaded', () => {
   function generateProblems(count, difficulty) {
     const problems = [];
 
-    // Set max value based on difficulty
-    let maxValue;
+    // Set min and max values based on difficulty
+    let minValue, maxValue;
     switch (difficulty) {
       case 1: // 1 digit (0-9)
+        minValue = 0;
         maxValue = 9;
         break;
       case 2: // 2 digits (0-99)
+        minValue = 0;
         maxValue = 99;
         break;
       case 3: // 3 digits (0-999)
+        minValue = 0;
+        maxValue = 999;
+        break;
+      case 4: // Custom range
+        minValue = customMinValue;
+        maxValue = customMaxValue;
+        break;
       default:
+        minValue = 0;
         maxValue = 999;
         break;
     }
@@ -456,8 +513,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
       if (operation === 'addition') {
         // Generate addition problem where sum <= maxValue
-        const a = Math.floor(Math.random() * (maxValue + 1));
-        const b = Math.floor(Math.random() * (maxValue - a + 1)); // Ensure sum <= maxValue
+        const a = Math.floor(Math.random() * (maxValue - minValue + 1)) + minValue;
+        const maxB = Math.min(maxValue - a, maxValue); // Ensure sum <= maxValue
+        const minB = Math.max(0, minValue - a); // Ensure b is not negative and respects minValue
+        const b = Math.floor(Math.random() * (maxB - minB + 1)) + minB;
 
         problems.push({
           id: i + 1,
@@ -468,8 +527,10 @@ document.addEventListener('DOMContentLoaded', () => {
         });
       } else {
         // Generate subtraction problem where both numbers <= maxValue and result is positive
-        const a = Math.floor(Math.random() * (maxValue + 1));
-        const b = Math.floor(Math.random() * (a + 1)); // Ensure b <= a for positive result
+        const a = Math.floor(Math.random() * (maxValue - minValue + 1)) + minValue;
+        const maxB = a; // Ensure b <= a for positive result
+        const minB = Math.max(minValue, a - maxValue); // Respect minValue and ensure result <= maxValue
+        const b = Math.floor(Math.random() * (maxB - minB + 1)) + minB;
 
         problems.push({
           id: i + 1,
