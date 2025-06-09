@@ -22,6 +22,7 @@ body {
 }
 
 header {
+  position: relative;
   text-align: center;
   margin-bottom: 30px;
 }
@@ -285,7 +286,6 @@ header h1 {
 
 .number-row {
   letter-spacing: 10px;
-  margin-right: 10px;
 }
 
 .answer-row {
@@ -609,4 +609,171 @@ header h1 {
 
 .sad {
   animation: sad 1s ease-in-out;
+}
+
+/* Settings styles */
+.settings-btn {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  background: #ff69b4;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 50px;
+  height: 50px;
+  font-size: 1.5rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.settings-btn:hover {
+  background: #ff1493;
+  transform: rotate(90deg);
+}
+
+.settings-screen {
+  text-align: center;
+  padding: 30px;
+}
+
+.settings-screen h3 {
+  color: #ff69b4;
+  margin-bottom: 30px;
+  font-size: 2rem;
+}
+
+.settings-content {
+  max-width: 500px;
+  margin: 0 auto;
+  text-align: left;
+}
+
+.setting-item {
+  margin-bottom: 25px;
+  padding: 20px;
+  background: #fff0f5;
+  border-radius: 15px;
+  border: 2px solid #ffb6c1;
+}
+
+.setting-item label {
+  display: block;
+  margin-bottom: 10px;
+  color: #333;
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.time-input-container {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+#timePerQuestion {
+  padding: 12px;
+  border: 2px solid #ffb6c1;
+  border-radius: 10px;
+  font-size: 1.1rem;
+  text-align: center;
+  background: white;
+  color: #333;
+  font-weight: 600;
+}
+
+#timePerQuestion:focus {
+  outline: none;
+  border-color: #ff69b4;
+  box-shadow: 0 0 10px rgba(255, 105, 180, 0.3);
+}
+
+.time-presets {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.time-preset-btn {
+  padding: 8px 16px;
+  background: white;
+  border: 2px solid #ffb6c1;
+  border-radius: 20px;
+  color: #ff69b4;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-weight: 600;
+}
+
+.time-preset-btn:hover,
+.time-preset-btn.active {
+  background: #ff69b4;
+  color: white;
+  transform: translateY(-2px);
+}
+
+.setting-item input[type="checkbox"] {
+  margin-right: 10px;
+  transform: scale(1.2);
+  accent-color: #ff69b4;
+}
+
+.settings-buttons {
+  display: flex;
+  gap: 15px;
+  justify-content: center;
+  margin-top: 30px;
+}
+
+/* Responsive cho settings */
+@media (max-width: 600px) {
+  .settings-btn {
+    top: 15px;
+    right: 15px;
+    width: 40px;
+    height: 40px;
+    font-size: 1.2rem;
+  }
+  
+  .settings-content {
+    padding: 0 10px;
+  }
+  
+  .time-presets {
+    gap: 8px;
+  }
+  
+  .time-preset-btn {
+    padding: 6px 12px;
+    font-size: 0.9rem;
+  }
+  
+  .settings-buttons {
+    flex-direction: column;
+    align-items: center;
+  }
+}
+/* Notification animations */
+@keyframes slideIn {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slideOut {
+  from {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateX(100%);
+    opacity: 0;
+  }
 }

@@ -10,13 +10,14 @@
   <div class="container">
     <header>
       <h1>Học Toán Vui Vẻ</h1>
+      <button id="settingsButton" class="settings-btn" title="Cài đặt">⚙️</button>
     </header>
     
     <div class="game-container">
       <div class="start-screen" id="startScreen">
         <h2>Sẵn sàng học toán nào!</h2>
         <p>Bạn sẽ có 10 phép tính để giải quyết.</p>
-        <p>Mỗi phép tính có thời gian là 60 giây.</p>
+        <p>Mỗi phép tính có thời gian là <span id="timeDisplayText">60</span> giây.</p>
         
         <div class="difficulty-selection">
           <h3>Chọn mức độ:</h3>
@@ -55,6 +56,34 @@
         </div>
         <button id="startCustomButton" class="btn">Bắt đầu</button>
         <button id="backButton" class="btn exit-btn">Quay lại</button>
+      </div>
+      
+      <div class="settings-screen hidden" id="settingsScreen">
+        <h3>Cài đặt</h3>
+        <div class="settings-content">
+          <div class="setting-item">
+            <label for="timePerQuestion">Thời gian cho mỗi câu hỏi (giây):</label>
+            <div class="time-input-container">
+              <input type="number" id="timePerQuestion" min="10" max="300" value="60" step="5">
+              <div class="time-presets">
+                <button class="time-preset-btn" data-time="30">30s</button>
+                <button class="time-preset-btn" data-time="60">60s</button>
+                <button class="time-preset-btn" data-time="90">90s</button>
+                <button class="time-preset-btn" data-time="120">2 phút</button>
+              </div>
+            </div>
+          </div>
+          <div class="setting-item">
+            <label>
+              <input type="checkbox" id="soundEnabled" checked>
+              Bật âm thanh
+            </label>
+          </div>
+        </div>
+        <div class="settings-buttons">
+          <button id="saveSettingsButton" class="btn">Lưu cài đặt</button>
+          <button id="backToMenuButton" class="btn exit-btn">Quay lại</button>
+        </div>
       </div>
       
       <div class="game-screen hidden" id="gameScreen">

@@ -4,6 +4,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const gameScreen = document.getElementById('gameScreen');
   const resultScreen = document.getElementById('resultScreen');
   const customRangeForm = document.getElementById('customRangeForm');
+  const settingsScreen = document.getElementById('settingsScreen');
 
   const level1Button = document.getElementById('level1Button');
   const level2Button = document.getElementById('level2Button');
@@ -13,6 +14,15 @@ document.addEventListener('DOMContentLoaded', () => {
   const backButton = document.getElementById('backButton');
   const minValueInput = document.getElementById('minValue');
   const maxValueInput = document.getElementById('maxValue');
+
+  // Settings elements
+  const settingsButton = document.getElementById('settingsButton');
+  const timePerQuestionInput = document.getElementById('timePerQuestion');
+  const soundEnabledCheckbox = document.getElementById('soundEnabled');
+  const saveSettingsButton = document.getElementById('saveSettingsButton');
+  const backToMenuButton = document.getElementById('backToMenuButton');
+  const timeDisplayText = document.getElementById('timeDisplayText');
+  const timePresetButtons = document.querySelectorAll('.time-preset-btn');
 
   const submitButton = document.getElementById('submitButton');
   const nextButton = document.getElementById('nextButton');
@@ -52,17 +62,96 @@ document.addEventListener('DOMContentLoaded', () => {
   let correctAnswers = 0;
   let timer;
   let timeLeft = 60;
-  const totalTime = 60; // Total time in seconds
+  let totalTime = 60; // Will be loaded from settings
   let currentDifficulty = 1; // Default: 1 digit
   let selectedAnswer = null;
   let customMinValue = 0;
   let customMaxValue = 100;
+  let soundEnabled = true; // Will be loaded from settings
+  
   let difficultyLabels = {
     1: "1 chữ số (0-9)",
     2: "2 chữ số (0-99)",
     3: "3 chữ số (0-999)",
     4: `Tùy chỉnh (${customMinValue}-${customMaxValue})`
   };
+
+  // Settings management
+  const SETTINGS_KEY = 'math4kids_settings';
+  const defaultSettings = {
+    timePerQuestion: 60,
+    soundEnabled: true
+  };
+
+  // Load settings from localStorage
+  function loadSettings() {
+    const savedSettings = localStorage.getItem(SETTINGS_KEY);
+    if (savedSettings) {
+      const settings = JSON.parse(savedSettings);
+      totalTime = settings.timePerQuestion || defaultSettings.timePerQuestion;
+      soundEnabled = settings.soundEnabled !== undefined ? settings.soundEnabled : defaultSettings.soundEnabled;
+    } else {
+      totalTime = defaultSettings.timePerQuestion;
+      soundEnabled = defaultSettings.soundEnabled;
+    }
+    
+    // Update UI
+    timePerQuestionInput.value = totalTime;
+    soundEnabledCheckbox.checked = soundEnabled;
+    timeDisplayText.textContent = totalTime;
+    updateTimePresetButtons();
+  }
+
+  // Save settings to localStorage
+  function saveSettings() {
+    const settings = {
+      timePerQuestion: parseInt(timePerQuestionInput.value),
+      soundEnabled: soundEnabledCheckbox.checked
+    };
+    localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
+    
+    // Update game variables
+    totalTime = settings.timePerQuestion;
+    soundEnabled = settings.soundEnabled;
+    timeDisplayText.textContent = totalTime;
+    
+    showNotification('Cài đặt đã được lưu!', 'success');
+  }
+
+  // Show notification
+  function showNotification(message, type = 'info') {
+    const notification = document.createElement('div');
+    notification.className = `notification ${type}`;
+    notification.textContent = message;
+    notification.style.cssText = `
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: ${type === 'success' ? '#4CAF50' : '#ff69b4'};
+      color: white;
+      padding: 15px 20px;
+      border-radius: 10px;
+      font-weight: 600;
+      z-index: 1000;
+      animation: slideIn 0.3s ease;
+    `;
+    
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+      notification.style.animation = 'slideOut 0.3s ease';
+      setTimeout(() => notification.remove(), 300);
+    }, 2000);
+  }
+
+  // Update time preset buttons
+  function updateTimePresetButtons() {
+    const currentTime = parseInt(timePerQuestionInput.value);
+    timePresetButtons.forEach(btn => {
+      const btnTime = parseInt(btn.dataset.time);
+      btn.classList.toggle('active', btnTime === currentTime);
+    });
+  }
 
   // Timer circle constants
   const CIRCUMFERENCE = 2 * Math.PI * 45; // 2πr where r=45
@@ -74,6 +163,23 @@ document.addEventListener('DOMContentLoaded', () => {
   levelCustomButton.addEventListener('click', showCustomRangeForm);
   startCustomButton.addEventListener('click', startCustomGame);
   backButton.addEventListener('click', hideCustomRangeForm);
+
+  // Settings event listeners
+  settingsButton.addEventListener('click', showSettings);
+  saveSettingsButton.addEventListener('click', () => {
+    saveSettings();
+    showStartScreen();
+  });
+  backToMenuButton.addEventListener('click', showStartScreen);
+  
+  timePerQuestionInput.addEventListener('input', updateTimePresetButtons);
+  
+  timePresetButtons.forEach(btn => {
+    btn.addEventListener('click', () => {
+      timePerQuestionInput.value = btn.dataset.time;
+      updateTimePresetButtons();
+    });
+  });
 
   submitButton.addEventListener('click', checkAnswer);
   nextButton.addEventListener('click', nextProblem);
@@ -89,6 +195,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function hideCustomRangeForm() {
     customRangeForm.classList.add('hidden');
+    startScreen.classList.remove('hidden');
+  }
+
+  // Settings functions
+  function showSettings() {
+    startScreen.classList.add('hidden');
+    settingsScreen.classList.remove('hidden');
+    loadSettings(); // Refresh settings display
+  }
+
+  function showStartScreen() {
+    settingsScreen.classList.add('hidden');
+    customRangeForm.classList.add('hidden');
+    gameScreen.classList.add('hidden');
+    resultScreen.classList.add('hidden');
     startScreen.classList.remove('hidden');
   }
 
@@ -266,11 +387,21 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function playTickSound() {
-    tickSound.play().catch(e => console.log("Audio play failed:", e));
+    if (soundEnabled) {
+      tickSound.play().catch(e => console.log("Audio play failed:", e));
+    }
   }
 
   function playCorrectSound() {
-    correctSound.play().catch(e => console.log("Audio play failed:", e));
+    if (soundEnabled) {
+      correctSound.play().catch(e => console.log("Audio play failed:", e));
+    }
+  }
+
+  function playWrongSound() {
+    if (soundEnabled) {
+      wrongSound.play().catch(e => console.log("Audio play failed:", e));
+    }
   }
 
   function timeUp() {
@@ -296,7 +427,7 @@ document.addEventListener('DOMContentLoaded', () => {
     feedbackElement.className = 'feedback incorrect';
 
     // Play wrong sound
-    wrongSound.play().catch(e => console.log("Audio play failed:", e));
+    playWrongSound();
   }
 
   function stopTickSound() {
@@ -344,7 +475,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }, 1000);
 
       // Play correct sound
-      correctSound.play().catch(e => console.log("Audio play failed:", e));
+      playCorrectSound();
 
       // Add animation
       playCorrectAnimation();
@@ -362,7 +493,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }, 1000);
 
       // Play wrong sound
-      wrongSound.play().catch(e => console.log("Audio play failed:", e));
+      playWrongSound();
 
       // Play incorrect animation
       playIncorrectAnimation();
@@ -481,6 +612,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // Function to generate random math problems based on difficulty
   function generateProblems(count, difficulty) {
     const problems = [];
+    const usedProblems = new Set(); // Để theo dõi các phép tính đã sử dụng
 
     // Set min and max values based on difficulty
     let minValue, maxValue;
@@ -507,41 +639,215 @@ document.addEventListener('DOMContentLoaded', () => {
         break;
     }
 
-    for (let i = 0; i < count; i++) {
-      // Randomly choose between addition and subtraction
-      const operation = Math.random() < 0.5 ? 'addition' : 'subtraction';
+    // Generate exactly 5 addition and 5 subtraction problems
+    const additionCount = Math.floor(count / 2);
+    const subtractionCount = count - additionCount;
 
-      if (operation === 'addition') {
-        // Generate addition problem where sum <= maxValue
-        const a = Math.floor(Math.random() * (maxValue - minValue + 1)) + minValue;
-        const maxB = Math.min(maxValue - a, maxValue); // Ensure sum <= maxValue
-        const minB = Math.max(0, minValue - a); // Ensure b is not negative and respects minValue
-        const b = Math.floor(Math.random() * (maxB - minB + 1)) + minB;
+    // Helper function to generate a random number in range, avoiding 0 unless specifically allowed
+    function getRandomNumber(min, max, allowZero = false) {
+      if (!allowZero && min === 0) {
+        min = 1;
+      }
+      if (max < min) {
+        return min;
+      }
+      return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
 
+    // Helper function to check if we should include zero (0.5% chance)
+    function shouldIncludeZero() {
+      return Math.random() < 0.005;
+    }
+
+    // Helper function to create problem key for duplicate checking
+    function createProblemKey(a, operation, b) {
+      return `${a}${operation}${b}`;
+    }
+
+    // Helper function to check if problem is duplicate
+    function isDuplicate(a, operation, b) {
+      const key = createProblemKey(a, operation, b);
+      return usedProblems.has(key);
+    }
+
+    // Helper function to add problem to used set
+    function addToUsed(a, operation, b) {
+      const key = createProblemKey(a, operation, b);
+      usedProblems.add(key);
+    }
+
+    // Generate addition problems
+    let additionAttempts = 0;
+    const maxAttempts = 1000; // Prevent infinite loop
+    
+    for (let i = 0; i < additionCount; i++) {
+      let a, b;
+      let validProblem = false;
+      
+      while (!validProblem && additionAttempts < maxAttempts) {
+        additionAttempts++;
+        
+        if (shouldIncludeZero()) {
+          // Include zero in this problem
+          if (Math.random() < 0.5) {
+            a = 0;
+            b = getRandomNumber(minValue, maxValue, true);
+          } else {
+            a = getRandomNumber(minValue, maxValue, true);
+            b = 0;
+          }
+        } else {
+          // Normal addition without zero
+          a = getRandomNumber(minValue, maxValue, false);
+          const maxB = Math.min(maxValue - a, maxValue);
+          const minB = Math.max(1, minValue);
+          
+          if (maxB >= minB) {
+            b = getRandomNumber(minB, maxB, false);
+          } else {
+            // Fallback: generate smaller numbers
+            a = getRandomNumber(minValue, Math.floor(maxValue / 2), false);
+            b = getRandomNumber(1, maxValue - a, false);
+          }
+        }
+
+        // Check if this problem is unique
+        if (!isDuplicate(a, '+', b)) {
+          validProblem = true;
+          addToUsed(a, '+', b);
+          
+          problems.push({
+            id: i + 1,
+            operation: '+',
+            a: a,
+            b: b,
+            answer: a + b
+          });
+        }
+      }
+      
+      // If we couldn't find a unique problem after many attempts, force one
+      if (!validProblem) {
+        console.warn(`Could not generate unique addition problem ${i + 1}, using fallback`);
+        // Generate a simple unique problem
+        let fallbackA = i + 1;
+        let fallbackB = 1;
+        while (isDuplicate(fallbackA, '+', fallbackB)) {
+          fallbackB++;
+          if (fallbackA + fallbackB > maxValue) {
+            fallbackA = Math.max(1, fallbackA - 1);
+            fallbackB = 1;
+          }
+        }
+        
+        addToUsed(fallbackA, '+', fallbackB);
         problems.push({
           id: i + 1,
           operation: '+',
-          a: a,
-          b: b,
-          answer: a + b
-        });
-      } else {
-        // Generate subtraction problem where both numbers <= maxValue and result is positive
-        const a = Math.floor(Math.random() * (maxValue - minValue + 1)) + minValue;
-        const maxB = a; // Ensure b <= a for positive result
-        const minB = Math.max(minValue, a - maxValue); // Respect minValue and ensure result <= maxValue
-        const b = Math.floor(Math.random() * (maxB - minB + 1)) + minB;
-
-        problems.push({
-          id: i + 1,
-          operation: '-',
-          a: a,
-          b: b,
-          answer: a - b
+          a: fallbackA,
+          b: fallbackB,
+          answer: fallbackA + fallbackB
         });
       }
     }
 
+    // Generate subtraction problems
+    let subtractionAttempts = 0;
+    
+    for (let i = 0; i < subtractionCount; i++) {
+      let a, b;
+      let validProblem = false;
+      
+      while (!validProblem && subtractionAttempts < maxAttempts) {
+        subtractionAttempts++;
+        
+        if (shouldIncludeZero()) {
+          // Include zero in this problem
+          if (Math.random() < 0.5) {
+            // Result is 0 (a - a = 0)
+            a = getRandomNumber(Math.max(1, minValue), maxValue, false);
+            b = a;
+          } else {
+            // Subtract 0 (a - 0 = a)
+            a = getRandomNumber(minValue, maxValue, true);
+            b = 0;
+          }
+        } else {
+          // Normal subtraction without zero
+          a = getRandomNumber(Math.max(1, minValue), maxValue, false);
+          const maxB = a - 1; // Ensure result > 0
+          const minB = Math.max(1, minValue);
+          
+          if (maxB >= minB) {
+            b = getRandomNumber(minB, maxB, false);
+          } else {
+            // Fallback: ensure positive result
+            b = getRandomNumber(1, Math.max(1, a - 1), false);
+          }
+        }
+
+        // Check if this problem is unique
+        if (!isDuplicate(a, '-', b)) {
+          validProblem = true;
+          addToUsed(a, '-', b);
+          
+          problems.push({
+            id: additionCount + i + 1,
+            operation: '-',
+            a: a,
+            b: b,
+            answer: a - b
+          });
+        }
+      }
+      
+      // If we couldn't find a unique problem after many attempts, force one
+      if (!validProblem) {
+        console.warn(`Could not generate unique subtraction problem ${i + 1}, using fallback`);
+        // Generate a simple unique problem
+        let fallbackA = Math.max(2, i + 2);
+        let fallbackB = 1;
+        while (isDuplicate(fallbackA, '-', fallbackB) || fallbackA - fallbackB <= 0) {
+          fallbackB++;
+          if (fallbackB >= fallbackA) {
+            fallbackA++;
+            fallbackB = 1;
+          }
+          if (fallbackA > maxValue) {
+            fallbackA = maxValue;
+            fallbackB = maxValue - 1;
+            break;
+          }
+        }
+        
+        addToUsed(fallbackA, '-', fallbackB);
+        problems.push({
+          id: additionCount + i + 1,
+          operation: '-',
+          a: fallbackA,
+          b: fallbackB,
+          answer: fallbackA - fallbackB
+        });
+      }
+    }
+
+    // Shuffle the problems to mix addition and subtraction
+    for (let i = problems.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [problems[i], problems[j]] = [problems[j], problems[i]];
+    }
+
+    // Re-assign IDs after shuffling
+    problems.forEach((problem, index) => {
+      problem.id = index + 1;
+    });
+
+    // Debug log to verify uniqueness
+    console.log(`Generated ${problems.length} unique problems (${additionAttempts + subtractionAttempts} total attempts)`);
+    
     return problems;
   }
+
+  // Initialize settings on page load
+  loadSettings();
 });
