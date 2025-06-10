@@ -211,6 +211,9 @@ document.addEventListener('DOMContentLoaded', () => {
     gameScreen.classList.add('hidden');
     resultScreen.classList.add('hidden');
     startScreen.classList.remove('hidden');
+    
+    // Show settings button when back to start screen
+    settingsButton.style.display = 'block';
   }
 
   function startCustomGame() {
@@ -241,6 +244,9 @@ document.addEventListener('DOMContentLoaded', () => {
   function startGame(difficulty) {
     // Set difficulty level
     currentDifficulty = difficulty;
+    
+    // Hide settings button when game starts
+    settingsButton.style.display = 'none';
 
     // Reset game state
     currentProblemIndex = 0;
@@ -541,6 +547,9 @@ document.addEventListener('DOMContentLoaded', () => {
     gameScreen.classList.add('hidden');
     startScreen.classList.remove('hidden');
     stopTickSound();
+    
+    // Show settings button when back to home
+    settingsButton.style.display = 'block';
   }
 
   function confirmExit() {

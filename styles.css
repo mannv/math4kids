@@ -729,9 +729,12 @@ header h1 {
 
 /* Responsive cho settings */
 @media (max-width: 600px) {
+  header h1 {
+    font-size: 2rem;
+  }
   .settings-btn {
-    top: 15px;
-    right: 15px;
+    top: 0;
+    right: 0;
     width: 40px;
     height: 40px;
     font-size: 1.2rem;
