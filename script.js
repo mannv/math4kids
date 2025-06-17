@@ -5,13 +5,18 @@ document.addEventListener('DOMContentLoaded', () => {
   const resultScreen = document.getElementById('resultScreen');
   const customRangeForm = document.getElementById('customRangeForm');
   const settingsScreen = document.getElementById('settingsScreen');
+  const multiplicationTableForm = document.getElementById('multiplicationTableForm');
 
   const level1Button = document.getElementById('level1Button');
   const level2Button = document.getElementById('level2Button');
   const level3Button = document.getElementById('level3Button');
   const levelCustomButton = document.getElementById('levelCustomButton');
+  const multiplicationTableButton = document.getElementById('multiplicationTableButton');
   const startCustomButton = document.getElementById('startCustomButton');
   const backButton = document.getElementById('backButton');
+  const backFromMultiplicationButton = document.getElementById('backFromMultiplicationButton');
+  const allTablesButton = document.getElementById('allTablesButton');
+  const tableBtns = document.querySelectorAll('.table-btn');
   const minValueInput = document.getElementById('minValue');
   const maxValueInput = document.getElementById('maxValue');
 
@@ -22,6 +27,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const saveSettingsButton = document.getElementById('saveSettingsButton');
   const backToMenuButton = document.getElementById('backToMenuButton');
   const timeDisplayText = document.getElementById('timeDisplayText');
+  const problemCountText = document.getElementById('problemCountText');
   const timePresetButtons = document.querySelectorAll('.time-preset-btn');
 
   const submitButton = document.getElementById('submitButton');
@@ -31,6 +37,8 @@ document.addEventListener('DOMContentLoaded', () => {
   const homeButton = document.getElementById('homeButton');
 
   const currentProblemElement = document.getElementById('currentProblem');
+  const totalProblemsElement = document.getElementById('totalProblems');
+  const totalProblemsResultElement = document.getElementById('totalProblemsResult');
   const timeLeftElement = document.getElementById('timeLeft');
   const timerCircleProgress = document.querySelector('.timer-circle-progress');
   const timerContainer = document.querySelector('.timer-circle-container');
@@ -68,12 +76,15 @@ document.addEventListener('DOMContentLoaded', () => {
   let customMinValue = 0;
   let customMaxValue = 100;
   let soundEnabled = true; // Will be loaded from settings
+  let multiplicationTable = 0; // 0 = all tables, 1-9 = specific table
+  let isMultiplicationMode = false;
   
   let difficultyLabels = {
     1: "1 chữ số (0-9)",
     2: "2 chữ số (0-99)",
     3: "3 chữ số (0-999)",
-    4: `Tùy chỉnh (${customMinValue}-${customMaxValue})`
+    4: `Tùy chỉnh (${customMinValue}-${customMaxValue})`,
+    5: "Bảng cửu chương"
   };
 
   // Settings management
@@ -161,8 +172,19 @@ document.addEventListener('DOMContentLoaded', () => {
   level2Button.addEventListener('click', () => startGame(2));
   level3Button.addEventListener('click', () => startGame(3));
   levelCustomButton.addEventListener('click', showCustomRangeForm);
+  multiplicationTableButton.addEventListener('click', showMultiplicationTableForm);
   startCustomButton.addEventListener('click', startCustomGame);
   backButton.addEventListener('click', hideCustomRangeForm);
+  backFromMultiplicationButton.addEventListener('click', hideMultiplicationTableForm);
+  allTablesButton.addEventListener('click', () => startMultiplicationGame(0));
+  
+  // Individual table buttons
+  tableBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      const tableNumber = parseInt(btn.dataset.table);
+      startMultiplicationGame(tableNumber);
+    });
+  });
 
   // Settings event listeners
   settingsButton.addEventListener('click', showSettings);
@@ -198,6 +220,20 @@ document.addEventListener('DOMContentLoaded', () => {
     startScreen.classList.remove('hidden');
   }
 
+  function showMultiplicationTableForm() {
+    startScreen.classList.add('hidden');
+    multiplicationTableForm.classList.remove('hidden');
+    // Update problem count text for multiplication
+    problemCountText.textContent = "Bạn sẽ có 9 phép tính để giải quyết.";
+  }
+
+  function hideMultiplicationTableForm() {
+    multiplicationTableForm.classList.add('hidden');
+    startScreen.classList.remove('hidden');
+    // Reset problem count text
+    problemCountText.textContent = "Bạn sẽ có 10 phép tính để giải quyết.";
+  }
+
   // Settings functions
   function showSettings() {
     startScreen.classList.add('hidden');
@@ -208,9 +244,13 @@ document.addEventListener('DOMContentLoaded', () => {
   function showStartScreen() {
     settingsScreen.classList.add('hidden');
     customRangeForm.classList.add('hidden');
+    multiplicationTableForm.classList.add('hidden');
     gameScreen.classList.add('hidden');
     resultScreen.classList.add('hidden');
     startScreen.classList.remove('hidden');
+    
+    // Reset problem count text
+    problemCountText.textContent = "Bạn sẽ có 10 phép tính để giải quyết.";
     
     // Show settings button when back to start screen
     settingsButton.style.display = 'block';
@@ -241,9 +281,33 @@ document.addEventListener('DOMContentLoaded', () => {
     startGame(4);
   }
 
+  function startMultiplicationGame(tableNumber) {
+    multiplicationTable = tableNumber;
+    isMultiplicationMode = true;
+    
+    // Hide multiplication table form
+    multiplicationTableForm.classList.add('hidden');
+    
+    // Update difficulty label
+    if (tableNumber === 0) {
+      difficultyLabels[5] = "Bảng cửu chương (Tất cả)";
+    } else {
+      difficultyLabels[5] = `Bảng cửu chương ${tableNumber}`;
+    }
+    
+    // Start game with multiplication difficulty (5)
+    startGame(5);
+  }
+
   function startGame(difficulty) {
     // Set difficulty level
     currentDifficulty = difficulty;
+    
+    // Reset multiplication mode if not multiplication difficulty
+    if (difficulty !== 5) {
+      isMultiplicationMode = false;
+      multiplicationTable = 0;
+    }
     
     // Hide settings button when game starts
     settingsButton.style.display = 'none';
@@ -253,8 +317,13 @@ document.addEventListener('DOMContentLoaded', () => {
     score = 0;
     correctAnswers = 0;
 
-    // Generate problems based on difficulty
-    problems = generateProblems(10, difficulty);
+    // Generate problems based on difficulty - 9 problems for multiplication, 10 for others
+    const problemCount = (difficulty === 5 && isMultiplicationMode) ? 9 : 10;
+    problems = generateProblems(problemCount, difficulty);
+
+    // Update total problems display
+    totalProblemsElement.textContent = problemCount;
+    totalProblemsResultElement.textContent = problemCount;
 
     // Show game screen
     startScreen.classList.add('hidden');
@@ -623,6 +692,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const problems = [];
     const usedProblems = new Set(); // Để theo dõi các phép tính đã sử dụng
 
+    // Handle multiplication table mode
+    if (difficulty === 5 && isMultiplicationMode) {
+      return generateMultiplicationProblems(count);
+    }
+
     // Set min and max values based on difficulty
     let minValue, maxValue;
     switch (difficulty) {
@@ -853,6 +927,190 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Debug log to verify uniqueness
     console.log(`Generated ${problems.length} unique problems (${additionAttempts + subtractionAttempts} total attempts)`);
+    
+    return problems;
+  }
+
+  function generateMultiplicationProblems(count) {
+    const problems = [];
+    const usedProblems = new Set();
+
+    if (multiplicationTable > 0 && count === 9) {
+      // For specific table with 9 problems, generate all combinations 1-9 but randomize order
+      const numbers = [1, 2, 3, 4, 5, 6, 7, 8, 9];
+      
+      // Fisher-Yates shuffle algorithm to randomize order
+      for (let i = numbers.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [numbers[i], numbers[j]] = [numbers[j], numbers[i]];
+      }
+      
+      // Also randomize whether the table number appears first or second
+      for (let i = 0; i < 9; i++) {
+        let firstNumber, secondNumber;
+        
+        if (Math.random() < 0.5) {
+          firstNumber = multiplicationTable;
+          secondNumber = numbers[i];
+        } else {
+          firstNumber = numbers[i];
+          secondNumber = multiplicationTable;
+        }
+        
+        const correctAnswer = firstNumber * secondNumber;
+        
+        // Generate wrong answers
+        const wrongAnswers = [];
+        const wrongAnswerSet = new Set();
+        
+        // Generate 3 unique wrong answers
+        let wrongAnswerAttempts = 0;
+        while (wrongAnswers.length < 3 && wrongAnswerAttempts < 50) {
+          let wrongAnswer;
+          
+          // Different strategies for wrong answers
+          const strategy = Math.floor(Math.random() * 4);
+          switch (strategy) {
+            case 0: // Add/subtract small amount
+              wrongAnswer = correctAnswer + (Math.random() < 0.5 ? 1 : -1) * (Math.floor(Math.random() * 5) + 1);
+              break;
+            case 1: // Common multiplication mistakes
+              const offset = Math.random() < 0.5 ? 1 : -1;
+              wrongAnswer = firstNumber * Math.max(1, secondNumber + offset);
+              break;
+            case 2: // Addition instead of multiplication
+              wrongAnswer = firstNumber + secondNumber;
+              break;
+            case 3: // Random nearby number
+              wrongAnswer = correctAnswer + (Math.random() < 0.5 ? 1 : -1) * (Math.floor(Math.random() * 10) + 1);
+              break;
+          }
+          
+          // Ensure wrong answer is positive and different from correct answer
+          if (wrongAnswer > 0 && wrongAnswer !== correctAnswer && !wrongAnswerSet.has(wrongAnswer)) {
+            wrongAnswers.push(wrongAnswer);
+            wrongAnswerSet.add(wrongAnswer);
+          }
+          wrongAnswerAttempts++;
+        }
+        
+        // If we couldn't generate enough wrong answers, fill with simple alternatives
+        while (wrongAnswers.length < 3) {
+          const wrongAnswer = correctAnswer + wrongAnswers.length + 1;
+          if (!wrongAnswerSet.has(wrongAnswer)) {
+            wrongAnswers.push(wrongAnswer);
+            wrongAnswerSet.add(wrongAnswer);
+          }
+        }
+        
+        const problem = {
+          a: firstNumber,
+          b: secondNumber,
+          operation: '×',
+          answer: correctAnswer,
+          wrongAnswers,
+          allAnswers: [correctAnswer, ...wrongAnswers].sort(() => Math.random() - 0.5)
+        };
+        
+        problems.push(problem);
+      }
+    } else {
+      // For all tables or other cases, use random generation
+      for (let i = 0; i < count; i++) {
+        let attempts = 0;
+        let problem;
+        
+        do {
+          let firstNumber, secondNumber;
+          
+          if (multiplicationTable === 0) {
+            // All tables (1-9)
+            firstNumber = Math.floor(Math.random() * 9) + 1; // 1-9
+            secondNumber = Math.floor(Math.random() * 9) + 1; // 1-9
+          } else {
+            // Specific table
+            if (Math.random() < 0.5) {
+              firstNumber = multiplicationTable;
+              secondNumber = Math.floor(Math.random() * 9) + 1; // 1-9
+            } else {
+              firstNumber = Math.floor(Math.random() * 9) + 1; // 1-9
+              secondNumber = multiplicationTable;
+            }
+          }
+          
+          const correctAnswer = firstNumber * secondNumber;
+          const problemKey = `${firstNumber}×${secondNumber}`;
+          const reverseKey = `${secondNumber}×${firstNumber}`;
+          
+          if (!usedProblems.has(problemKey) && !usedProblems.has(reverseKey)) {
+            // Generate wrong answers
+            const wrongAnswers = [];
+            const wrongAnswerSet = new Set();
+            
+            // Generate 3 unique wrong answers
+            let wrongAnswerAttempts = 0;
+            while (wrongAnswers.length < 3 && wrongAnswerAttempts < 50) {
+              let wrongAnswer;
+              
+              // Different strategies for wrong answers
+              const strategy = Math.floor(Math.random() * 4);
+              switch (strategy) {
+                case 0: // Add/subtract small amount
+                  wrongAnswer = correctAnswer + (Math.random() < 0.5 ? 1 : -1) * (Math.floor(Math.random() * 5) + 1);
+                  break;
+                case 1: // Common multiplication mistakes
+                  const offset = Math.random() < 0.5 ? 1 : -1;
+                  wrongAnswer = firstNumber * Math.max(1, secondNumber + offset);
+                  break;
+                case 2: // Addition instead of multiplication
+                  wrongAnswer = firstNumber + secondNumber;
+                  break;
+                case 3: // Random nearby number
+                  wrongAnswer = correctAnswer + (Math.random() < 0.5 ? 1 : -1) * (Math.floor(Math.random() * 10) + 1);
+                  break;
+              }
+              
+              // Ensure wrong answer is positive and different from correct answer
+              if (wrongAnswer > 0 && wrongAnswer !== correctAnswer && !wrongAnswerSet.has(wrongAnswer)) {
+                wrongAnswers.push(wrongAnswer);
+                wrongAnswerSet.add(wrongAnswer);
+              }
+              wrongAnswerAttempts++;
+            }
+            
+            // If we couldn't generate enough wrong answers, fill with simple alternatives
+            while (wrongAnswers.length < 3) {
+              const wrongAnswer = correctAnswer + wrongAnswers.length + 1;
+              if (!wrongAnswerSet.has(wrongAnswer)) {
+                wrongAnswers.push(wrongAnswer);
+                wrongAnswerSet.add(wrongAnswer);
+              }
+            }
+            
+            problem = {
+              a: firstNumber,
+              b: secondNumber,
+              operation: '×',
+              answer: correctAnswer,
+              wrongAnswers,
+              allAnswers: [correctAnswer, ...wrongAnswers].sort(() => Math.random() - 0.5)
+            };
+            
+            usedProblems.add(problemKey);
+            usedProblems.add(reverseKey);
+            break;
+          }
+          
+          attempts++;
+        } while (attempts < 100);
+        
+        if (problem) {
+          problems.push(problem);
+        } else {
+          console.error(`Failed to generate problem ${i + 1} after 100 attempts`);
+        }
+      }
+    }
     
     return problems;
   }

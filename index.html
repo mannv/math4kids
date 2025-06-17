@@ -16,28 +16,36 @@
     <div class="game-container">
       <div class="start-screen" id="startScreen">
         <h2>Sẵn sàng học toán nào!</h2>
-        <p>Bạn sẽ có 10 phép tính để giải quyết.</p>
+        <p id="problemCountText">Bạn sẽ có 10 phép tính để giải quyết.</p>
         <p>Mỗi phép tính có thời gian là <span id="timeDisplayText">60</span> giây.</p>
         
         <div class="difficulty-selection">
           <h3>Chọn mức độ:</h3>
           <div class="difficulty-options">
-            <button id="level1Button" class="btn difficulty-btn">
-              <div class="difficulty-icon">1</div>
-              <div class="difficulty-label">1 chữ số (0-9)</div>
-            </button>
-            <button id="level2Button" class="btn difficulty-btn">
-              <div class="difficulty-icon">2</div>
-              <div class="difficulty-label">2 chữ số (0-99)</div>
-            </button>
-            <button id="level3Button" class="btn difficulty-btn">
-              <div class="difficulty-icon">3</div>
-              <div class="difficulty-label">3 chữ số (0-999)</div>
-            </button>
-            <button id="levelCustomButton" class="btn difficulty-btn">
-              <div class="difficulty-icon">C</div>
-              <div class="difficulty-label">Tùy chỉnh</div>
-            </button>
+            <div class="basic-levels">
+              <button id="level1Button" class="btn difficulty-btn">
+                <div class="difficulty-icon">1</div>
+                <div class="difficulty-label"><span class="text">1 chữ số </span>(0-9)</div>
+              </button>
+              <button id="level2Button" class="btn difficulty-btn">
+                <div class="difficulty-icon">2</div>
+                <div class="difficulty-label"><span class="text">2 chữ số </span>(0-99)</div>
+              </button>
+              <button id="level3Button" class="btn difficulty-btn">
+                <div class="difficulty-icon">3</div>
+                <div class="difficulty-label"><span class="text">3 chữ số </span>(0-999)</div>
+              </button>
+            </div>
+            <div class="advanced-levels">
+              <button id="levelCustomButton" class="btn difficulty-btn">
+                <div class="difficulty-icon">C</div>
+                <div class="difficulty-label">Tùy chỉnh</div>
+              </button>
+              <button id="multiplicationTableButton" class="btn difficulty-btn multiplication-btn">
+                <div class="difficulty-icon">×</div>
+                <div class="difficulty-label">Bảng cửu chương</div>
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -56,6 +64,55 @@
         </div>
         <button id="startCustomButton" class="btn">Bắt đầu</button>
         <button id="backButton" class="btn exit-btn">Quay lại</button>
+      </div>
+      
+      <div class="multiplication-table-selection hidden" id="multiplicationTableForm">
+        <h3>Chọn bảng cửu chương:</h3>
+        <div class="multiplication-options">
+          <button id="allTablesButton" class="btn multiplication-table-btn">
+            <div class="table-icon">ALL</div>
+            <div class="table-label">Tất cả bảng (1-9)</div>
+          </button>
+          <div class="individual-tables">
+            <button class="btn multiplication-table-btn table-btn" data-table="1">
+              <div class="table-icon">1</div>
+              <div class="table-label">Bảng 1</div>
+            </button>
+            <button class="btn multiplication-table-btn table-btn" data-table="2">
+              <div class="table-icon">2</div>
+              <div class="table-label">Bảng 2</div>
+            </button>
+            <button class="btn multiplication-table-btn table-btn" data-table="3">
+              <div class="table-icon">3</div>
+              <div class="table-label">Bảng 3</div>
+            </button>
+            <button class="btn multiplication-table-btn table-btn" data-table="4">
+              <div class="table-icon">4</div>
+              <div class="table-label">Bảng 4</div>
+            </button>
+            <button class="btn multiplication-table-btn table-btn" data-table="5">
+              <div class="table-icon">5</div>
+              <div class="table-label">Bảng 5</div>
+            </button>
+            <button class="btn multiplication-table-btn table-btn" data-table="6">
+              <div class="table-icon">6</div>
+              <div class="table-label">Bảng 6</div>
+            </button>
+            <button class="btn multiplication-table-btn table-btn" data-table="7">
+              <div class="table-icon">7</div>
+              <div class="table-label">Bảng 7</div>
+            </button>
+            <button class="btn multiplication-table-btn table-btn" data-table="8">
+              <div class="table-icon">8</div>
+              <div class="table-label">Bảng 8</div>
+            </button>
+            <button class="btn multiplication-table-btn table-btn" data-table="9">
+              <div class="table-icon">9</div>
+              <div class="table-label">Bảng 9</div>
+            </button>
+          </div>
+        </div>
+        <button id="backFromMultiplicationButton" class="btn exit-btn">Quay lại</button>
       </div>
       
       <div class="settings-screen hidden" id="settingsScreen">
@@ -89,7 +146,7 @@
       <div class="game-screen hidden" id="gameScreen">
         <div class="info-bar">
           <div style="text-align: left">
-            <div class="problem-counter">Câu hỏi: <span id="currentProblem">1</span>/10</div>
+            <div class="problem-counter">Câu hỏi: <span id="currentProblem">1</span>/<span id="totalProblems">10</span></div>
             <div class="score">Điểm: <span id="score">0</span></div>
           </div>
           <div class="timer-container">
@@ -143,7 +200,7 @@
       <div class="result-screen hidden" id="resultScreen">
         <h2>Kết quả</h2>
         <div class="result-info">
-          <p>Số câu đúng: <span id="correctAnswers">0</span>/10</p>
+          <p>Số câu đúng: <span id="correctAnswers">0</span>/<span id="totalProblemsResult">10</span></p>
           <p>Điểm của bạn: <span id="finalScore">0</span></p>
           <p>Mức độ: <span id="difficultyLevel">1 chữ số</span></p>
         </div>
